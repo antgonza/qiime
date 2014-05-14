@@ -164,17 +164,18 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
     # list to include only the comparisons that we want.
     result = {}
     for field_state in field_states:
-        result[field_state] = {}
         for comp_field_state in comparison_field_states:
-            result[field_state][comp_field_state] = []
             for group in between_groupings:
                 if ((group[0] == field_state or group[1] == field_state)
                     and (group[0] == comp_field_state or
-                         group[1] == comp_field_state)):
+                         group[1] == comp_field_state) and len(group[2])>0):
                     # We've found a group of distances between our comparison
                     # field state and the current field state, so keep the
                     # data.
+                    if field_state not in result:
+                        result[field_state] = {}
                     result[field_state][comp_field_state] = group[2]
+
     return result
 
 def get_ordered_coordinates(coordinate_header,
@@ -182,25 +183,25 @@ def get_ordered_coordinates(coordinate_header,
                             order,
                             strict=False):
     """ Return coordinate vectors in order
-    
+
         coordinate_header: ids corresponding to vectors
-         in coordinate_matrix (element 0 of output of 
+         in coordinate_matrix (element 0 of output of
          qiime.parse.parse_coords)
         coordinate_matrix: the coordinate vectors (element 1 of
          output of qiime.parse.parse_coords)
-        order: ordered ids from coordinate_header (usually sample 
+        order: ordered ids from coordinate_header (usually sample
          ids) for coordinates that should be extracted
         strict: raise an error if an id from order is not present
          in coordinate_header (default: that id is ignored)
-        
-        The output of this function will be a tuple of the coordinate 
+
+        The output of this function will be a tuple of the coordinate
          vectors corresponding to each id in order, and the id order:
          (ordered_coordinates, ordered_ids)
         Note that the output order can be a subset of the input order
-         if some ids from order are not present in coordinate_header 
+         if some ids from order are not present in coordinate_header
          and strict == False.
-        
-        This function can be used in a way analogous to 
+
+        This function can be used in a way analogous to
          get_adjacent_distances to get a set of coordinates that
          might be connected by a line, for example.
     """
@@ -225,27 +226,27 @@ def get_adjacent_distances(dist_matrix_header,
                            sample_ids,
                            strict=False):
     """Return the distances between the adjacent sample_ids as a list
-    
+
     dist_matrix_header: distance matrix headers, e.g. the output
         of qiime.parse.parse_distmat (element 0)
-    dist_matrix: distance matrix, e.g., the output of 
+    dist_matrix: distance matrix, e.g., the output of
         qiime.parse.parse_distmat (element 1)
     sample_ids: a list of sample ids
-    strict: boolean indicating whether to raise ValueError if a 
-        sample_id is not in dm (default: False; sample_ids not in 
+    strict: boolean indicating whether to raise ValueError if a
+        sample_id is not in dm (default: False; sample_ids not in
         dm are ignored)
-       
+
     The output of this function will be a list of the distances
     between the adjacent sample_ids, and a list of the pair of sample ids
-    corresponding to each distance. This could subsequently be used, for 
-    example, to plot unifrac distances between days in a timeseries, as 
+    corresponding to each distance. This could subsequently be used, for
+    example, to plot unifrac distances between days in a timeseries, as
     d1 to d2, d2 to d3, d3 to d4, and so on. The list of pairs of sample
     ids are useful primarily in labeling axes when strict=False
-       
+
     WARNING: Only symmetric, hollow distance matrices may be used as input.
     Asymmetric distance matrices, such as those obtained by the UniFrac Gain
     metric (i.e. beta_diversity.py -m unifrac_g), should not be used as input.
-    
+
     """
     filtered_idx = []
     filtered_sids = []
@@ -261,12 +262,12 @@ def get_adjacent_distances(dist_matrix_header,
         else:
             filtered_idx.append(idx)
             filtered_sids.append(sid)
-    
+
     if len(filtered_idx) < 2:
         raise ValueError, \
          ("At least two of your sample_ids must be present in the"
          " distance matrix. %d are present." % len(filtered_idx))
-    
+
     distance_results = []
     header_results = []
     for i in range(len(filtered_idx) - 1):
@@ -356,7 +357,7 @@ def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True,
           is fairly fast. However, if you *know* you have a symmetric and
           hollow distance matrix, you can disable this check for small
           performance gains on extremely large distance matrices
-    
+
     If within is True, the zeros along the diagonal of the distance matrix are
     omitted.
     """

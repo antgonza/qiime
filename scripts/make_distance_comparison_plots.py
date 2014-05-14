@@ -308,6 +308,10 @@ def main():
     for field_state in field_states:
         field_state_data = []
         for comp_field_state in comparison_field_states:
+            # making sure that all comp_field_state are in the dictionary, if
+            # not add it
+            if comp_field_state not in comparison_groupings[field_state]:
+                comparison_groupings[field_state][comp_field_state] = []
             field_state_data.append(
                     comparison_groupings[field_state][comp_field_state])
         plot_data.append(field_state_data)
